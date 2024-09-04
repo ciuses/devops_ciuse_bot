@@ -162,4 +162,4 @@ def run() -> None:
 if __name__ == '__main__':
     create_tables()
     run()
-    # TODO раскидать логирование
+    # TODO раскидать логирование или нет
