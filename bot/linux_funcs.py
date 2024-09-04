@@ -10,6 +10,7 @@ load_dotenv()
 ip = os.getenv('host')
 log = os.getenv('user')
 pa = os.getenv('pass')
+su_pa = os.getenv('v_su_pass')
 
 
 def get_info_from_linux_single(my_comma='ls -la',
@@ -92,12 +93,12 @@ def linux_w(update: Update, _) -> None:
 
 
 def linux_mpstat(update: Update, _) -> None:
-    my_release = get_info_from_linux_single(my_comma='top', superuser=True)
+    my_release = get_info_from_linux_single(my_comma='top', superuser=True, su_pass=su_pa)
     update.message.reply_text(my_release[461:])
 
 
 def linux_critical(update: Update, _) -> None:
-    my_release = get_info_from_linux_single(my_comma='dmesg -H --level=err', superuser=True)  # crit
+    my_release = get_info_from_linux_single(my_comma='dmesg -H --level=err', superuser=True, su_pass=su_pa)  # crit
     update.message.reply_text(my_release[461:])
 
 
@@ -118,25 +119,6 @@ def linux_ss(update: Update, _) -> None:
 
 '''Другой концепт диалога где спрашиваешь уточнения.'''
 
-
-# TODO выпилить этот блок, оно эксперементально
-def linux_apt_list(update: Update, _) -> str:
-    replay_keyboard = [['Один', 'Много']]
-    markup_keys = ReplyKeyboardMarkup(replay_keyboard, one_time_keyboard=True)
-    update.message.reply_text('Выбери режим, одного пакета или много?', reply_markup=markup_keys, )
-    return 'linux_apt_list_one'
-
-
-def linux_apt_list_one(update: Update, _) -> str:
-    update.message.reply_text('Введи название пакета', reply_markup=ReplyKeyboardRemove(), )
-    return 'linux_apt_list_one'
-
-
-def linux_apt_list_one_get(update: Update, _) -> int:
-    user_input = update.message.text
-    my_release = get_info_from_linux_single(my_comma=f'apt list | grep {user_input}')
-    update.message.reply_text(my_release)
-    return ConversationHandler.END
 
 
 def linux_apt_list_many(update: Update, _) -> int:  # выходит большой список
@@ -230,11 +212,14 @@ def single_service_get(update, _) -> str:
 def single_service_post(update, _) -> str:
     user_input = update.message.text
     my_single_service = get_info_from_linux_single(my_comma=f'systemctl list-units --type service | grep {user_input}',
-                                                   superuser=True)
+                                                   superuser=True, su_pass=su_pa)
     update.message.reply_text(my_single_service[461:])
     return 'third_level'
 
-
+'''
+Эта функция нужна только для особых случаев сбора лога с удалённой реплики, сейчас не нужна.
+Вместо неё linux_replica_log2.
+'''
 def linux_replica_log(update: Update, _) -> None:
     my_com = 'tail -n 15 /var/log/postgresql/postgresql-15-main.log'
     log_15_str = get_info_from_linux_single(my_comma=my_com,

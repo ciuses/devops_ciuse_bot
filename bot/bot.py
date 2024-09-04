@@ -17,10 +17,7 @@ from linux_funcs import (linux_release,
                          linux_auths,
                          linux_w,
                          linux_mpstat,
-                         linux_apt_list,
-                         linux_apt_list_one,
                          linux_apt_list_many,
-                         linux_apt_list_one_get,
                          linux_packages_services,
                          all_install_packages,
                          all_up_services,
@@ -102,13 +99,6 @@ def run() -> None:
         states={'check_pas': [MessageHandler(Filters.text & ~Filters.command, check_pas)], },
         fallbacks=[CommandHandler('exit', my_exit)])
 
-    '''Перехват диалога apt list'''
-    apt_list_handler = ConversationHandler(  # TODO выпилить этот блок, вместе с функциями, оно эксперементально
-        entry_points=[CommandHandler('get_apt_list', linux_apt_list)],
-        states={'linux_apt_list_one': [MessageHandler(Filters.regex('^(Один)$'), linux_apt_list_one),
-                                       MessageHandler(Filters.regex('^(Много)$'), linux_apt_list_many),
-                                       MessageHandler(Filters.text, linux_apt_list_one_get)], },
-        fallbacks=[CommandHandler('exit', my_exit)])
 
     '''Перехват деалога запроса пакетов и сервисов'''
     decision_tree = ConversationHandler(
@@ -150,7 +140,6 @@ def run() -> None:
     my_disp.add_handler(get_emails_handler)
     my_disp.add_handler(get_telephons_handler)
 
-    my_disp.add_handler(apt_list_handler)
     my_disp.add_handler(decision_tree)
 
     my_disp.add_handler(echo_handler)

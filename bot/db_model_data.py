@@ -40,7 +40,7 @@ class Emails(Base):  # todo переписать email на address
 
 def create_tables(dsn: str = DNS_2) -> object:
     engine = alch.create_engine(dsn)
-    Base.metadata.drop_all(engine)  # можно не дропать базки
+    # Base.metadata.drop_all(engine)  # можно не дропать базки
     Base.metadata.create_all(engine)
     return Session(engine)
 
@@ -108,11 +108,12 @@ if __name__ == '__main__':
     #
     # add_the_data(dsn=DNS_2)
 
-    q_list_tel = Telephons.id, Telephons.number
-    q_list_em = Emails.id, Emails.email
-
-    tels = select_from_tables(dsn=DNS_2, many_data=q_list_tel)
-    mails = select_from_tables(dsn=DNS_2, many_data=q_list_em)
-    for r in tels:
-        print(r)
-    print(mails)
+    # q_list_tel = Telephons.id, Telephons.number
+    # q_list_em = Emails.id, Emails.email
+    #
+    # tels = select_from_tables(dsn=DNS_2, many_data=q_list_tel)
+    # mails = select_from_tables(dsn=DNS_2, many_data=q_list_em)
+    # for r in tels:
+    #     print(r)
+    # print(mails)
+    pass
