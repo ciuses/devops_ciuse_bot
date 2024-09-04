@@ -11,4 +11,4 @@ pip install psycopg2
 pip install --no-cache-dir -r requirements.txt
 EOF
 
-CMD [ "python", "./echo_bot.py" ]
+CMD [ "python", "./bot.py" ]
