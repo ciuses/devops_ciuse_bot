@@ -1,0 +1,44 @@
+networks:
+  network:
+    driver: bridge
+
+services:
+  base_master:
+    image: postgres:15-bookworm
+    container_name: m_base
+    ports:
+      - "54329:5432"
+    volumes:
+      - ./m_base:/var/lib/postgresql/data
+      - ./1_init.sql:/docker-entrypoint-initdb.d/1_init.sql
+      - ./2_scr.sh:/docker-entrypoint-initdb.d/2_scr.sh
+    environment:
+      POSTGRES_PASSWORD: zxcvbnpo
+      POSTGRES_DB: db_num_3
+    networks:
+      - network
+
+  base_slave:
+    image: postgres:15-bookworm
+    container_name: s_base
+    restart: always
+    ports:
+      - "54328:5432"
+    volumes:
+      - ./s_base:/var/lib/postgresql/data
+      - ./3_scr.sh:/docker-entrypoint-initdb.d/3_scr.sh
+    environment:
+      POSTGRES_PASSWORD: zxcvbnpo
+    networks:
+      - network
+
+  bot:
+    container_name: ciuse_bot
+    restart: always
+    build: .
+    volumes:
+      - ./m_base:/tmp/
+    networks:
+      - network
+
+
