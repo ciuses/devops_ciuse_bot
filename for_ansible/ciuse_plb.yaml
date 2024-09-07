@@ -1,0 +1,69 @@
+- name: Install Postgres Master
+  hosts: db_master
+  become: yes
+  tasks:
+    - name: Install packages
+      apt:
+        name:
+          - postgresql
+          - postgresql-contrib
+        state: present
+
+    - name: Execute shell command
+      ansible.builtin.shell: |
+        echo "listen_addresses = '*'" >> /etc/postgresql/14/main/postgresql.conf
+        echo "wal_level = replica" >> /etc/postgresql/14/main/postgresql.conf
+        echo "max_wal_senders = 10" >> /etc/postgresql/14/main/postgresql.conf
+        echo "wal_log_hints = on" >> /etc/postgresql/14/main/postgresql.conf
+        echo "archive_mode = on" >> /etc/postgresql/14/main/postgresql.conf
+        echo "max_replication_slots = 10" >> /etc/postgresql/14/main/postgresql.conf
+        echo "log_destination = 'stderr'" >> /etc/postgresql/14/main/postgresql.conf
+        echo "logging_collector = on" >> /etc/postgresql/14/main/postgresql.conf
+        echo "log_directory = '/var/lib/postgresql/data/'" >> /etc/postgresql/14/main/postgresql.conf
+        echo "log_filename = 'postgresql-my.log'" >> /etc/postgresql/14/main/postgresql.conf
+        echo "log_statement = all" >> /etc/postgresql/14/main/postgresql.conf
+        echo "log_replication_commands = on" >> /etc/postgresql/14/main/postgresql.conf
+        echo "host all all 0.0.0.0/0 trust" >> /etc/postgresql/14/main/pg_hba.conf
+        echo "host replication all 0.0.0.0/0 trust" >> /etc/postgresql/14/main/pg_hba.conf
+        service postgresql restart
+        sudo su postgres -c "createdb db_num_3"
+
+
+- name: Install Postgres Slave
+  hosts: db_slave
+  become: yes
+  tasks:
+    - name: Install packages
+      apt:
+        name:
+          - postgresql
+          - postgresql-contrib
+        state: present
+
+    - name: Execute shell command
+      ansible.builtin.shell: |
+        echo "listen_addresses = '*'" >> /etc/postgresql/14/main/postgresql.conf
+        echo "host all all 0.0.0.0/0 trust" >> /etc/postgresql/14/main/pg_hba.conf
+        service postgresql stop
+        rm -rf /var/lib/postgresql/14/main
+        sudo su postgres -c "pg_basebackup --write-recovery-conf --host=172.16.3.22 --pgdata=/var/lib/postgresql/14/main/"
+        service postgresql start
+
+- name: Install Bot
+  hosts: loca
+  become: yes
+  tasks:
+    - name: Clone a repo with separate git directory
+      ansible.builtin.git:
+        repo: https://github.com/ciuses/devops_stream2.git
+        dest: ./bot
+
+    - name: Copy env file
+      copy:
+        src: ./.env
+        dest: ./bot/.env
+
+    - name: Execute shell command
+      ansible.builtin.shell: |
+        pip install --no-cache-dir -r ./bot/requirements.txt
+        nohup python ./bot/echo_bot.py &
